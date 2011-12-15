@@ -11,22 +11,22 @@ public class Main {
 		
 		// Start here:
 		// System.out.println("PRESS A BUTTON");
-		// Button.waitForPress();
 		
 		// Read in the WHITE value:
 		System.out.println("Place on WHITE");
+		// Button.waitForPress();
 		myAlfred.setHighReadInValue(myAlfred.readSensorValue());
 		Sound.playTone(440, 200);
 		
 		// Read in the BLACK value:
 		System.out.println("Place on BLACK");
-		// Thread.sleep(3000);
+		// Button.waitForPress();
 		myAlfred.setLowReadInValue(myAlfred.readSensorValue());
 		Sound.playTone(440, 200);
 		
-		System.out.println("OPTIMUM: " + myAlfred.getOptimumSensorValue());
+		System.out.println("OPTIMUM: " + myAlfred.getOptimumSensorValue(myAlfred.readSensorValue()));
 		
-		// Thread.sleep(4000);
+		// Button.waitForPress();
 		myAlfred.run();
 	}
 
