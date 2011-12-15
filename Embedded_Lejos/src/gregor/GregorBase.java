@@ -22,27 +22,29 @@ public abstract class GregorBase {
 
 	private final PIDController pid;
 
-
 	public GregorBase(int black, int white, float kp, float ki, float kd) {
 		this.black = black;
 		this.white = white;
 		this.targetSensorValue = calcTarget(black, white);
 		
-		this.pilot = new DifferentialPilot(WHEEL_DIAMETER, TRACK_WIDTH,
-				Motor.A, Motor.C, true);
+		this.pilot = new DifferentialPilot(WHEEL_DIAMETER, TRACK_WIDTH, Motor.A, Motor.C, true);
 		
 		this.pid = new PIDController(targetSensorValue); //try to get to optimal grayscale
 		this.pid.setPIDParam(PIDController.PID_KP, kp);
 		this.pid.setPIDParam(PIDController.PID_KI, ki);
 		this.pid.setPIDParam(PIDController.PID_KD, kd);
-		//set deadband
-		this.pid.setPIDParam(PIDController.PID_DEADBAND, 20.0f);
 		
-		//according to steer
-		this.pid.setPIDParam(PIDController.PID_LIMITHIGH, 200);
-		this.pid.setPIDParam(PIDController.PID_LIMITLOW, -200);
+		//set deadband - do not steer in the target-zone:
+		// this.pid.setPIDParam(PIDController.PID_DEADBAND, 10);
 		
-		speed = pilot.getMaxTravelSpeed();
+		//according to steer - sets limits for controlValue
+		this.pid.setPIDParam(PIDController.PID_LIMITHIGH, 900);
+		this.pid.setPIDParam(PIDController.PID_LIMITLOW, -900);
+		
+		this.pid.setPIDParam(PIDController.PID_I_LIMITHIGH, 25);
+		this.pid.setPIDParam(PIDController.PID_I_LIMITLOW, -25);
+		
+		speed = pilot.getMaxTravelSpeed() - 160;
 	}
 
 	private void forward() {
@@ -143,6 +145,18 @@ public abstract class GregorBase {
 	public void setWhite(int white) {
 		this.white = white;
 	}
+	
+	public void setParameters(float pValue, float iValue, float dValue) {
+		this.pid.setPIDParam(PIDController.PID_KP, pValue);
+		this.pid.setPIDParam(PIDController.PID_KI, iValue);
+		this.pid.setPIDParam(PIDController.PID_KD, dValue);
+	}
 
+	public void setIParameters(int high, int low) {
+		this.pid.setPIDParam(PIDController.PID_I_LIMITHIGH, high);
+		this.pid.setPIDParam(PIDController.PID_I_LIMITLOW, low);
+	}
+	
 	public abstract int calcTarget(int black, int white);
+
 }

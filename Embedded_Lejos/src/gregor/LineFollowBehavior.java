@@ -1,5 +1,6 @@
 package gregor;
 
+import lejos.nxt.Sound;
 import lejos.robotics.subsumption.Behavior;
 
 /**
@@ -8,47 +9,62 @@ import lejos.robotics.subsumption.Behavior;
  * 
  */
 public class LineFollowBehavior implements Behavior {
-
-	private static final float SPEED = 150;
-
+	
+	long start;
+	
 	private GregorBase puppet;
 	private boolean suppressed = false;
 
 	public LineFollowBehavior(GregorBase puppet) {
 		this.puppet = puppet;
-		this.puppet.setSpeed(SPEED);
 	}
-
+	
 	@Override
 	public void action() {
 		suppressed = false;
 		int controlValue;
-		while (!suppressed) {
-			controlValue = puppet.doPID(GregorBase.readLightValue());
-			System.out.println(controlValue);
-			puppet.steer(controlValue);
+		float pValue = 0.1f;
+		float iValue = 0.00281282f;
+		float dValue = 3.91954847f;
+		int iLimit = -10;
+		int testSpeed = 0;
+		
+		
+		for(int i=0; i<9; i++) {
+			pValue = pValue + 0.05f;
+			// iLimit = iLimit + 10;
+			// testSpeed = testSpeed + 25;
 			
-//			 int lightValue = puppet.readLightValue();
-//			 if (lightValue > sensorOptimum) {
-//			 float intensity = ((float)(lightValue -
-//			 sensorOptimum)/(float)(puppet.black - sensorOptimum))*kp;
-//			 if(intensity > 1) intensity = 1;
-//			 // integral:
-//			 integral += (float)(lightValue-sensorOptimum);
-//			 puppet.turnLeft(intensity);
-//			 } else if (lightValue < sensorOptimum){
-//			 float intensity = ((float)(sensorOptimum -
-//			 lightValue)/(float)(sensorOptimum))*kp;
-//			 if(intensity > 1) intensity = 1;
-//			 // integral
-//			 integral += (float)(lightValue-sensorOptimum);
-//			 puppet.turnRight(intensity);
-//			 } else {
-//			 puppet.straight(SPEED);
-//			 }
-		}
+			puppet.setParameters(0.5f, 0.0f, 0.0f);
+			// puppet.setIParameters(iLimit, -1*iLimit);
+			// puppet.setSpeed(testSpeed);
+			
+			start = System.currentTimeMillis();
+			suppressed = false;
+			Sound.playTone(440, 200);
+			
+			int error = 0;
+			
+			while (!suppressed) {
+				if(System.currentTimeMillis() - start < 10000) {
+					
+//					error = ((puppet.getBlack() + puppet.getWhite()) / 2) - puppet.readLightValue();
+					error = 325 - puppet.readLightValue();
+					
+//					controlValue = puppet.doPID(GregorBase.readLightValue());
+					controlValue = (int)(0.4f * error);
+					
+//					controlValue = Math.round(((float)controlValue / 900.0f)*200);
+					
+					System.out.println(controlValue);
+					puppet.steer(controlValue);
+				} else {
+					suppressed = true;
+				}
+			}
+		}			
 	}
-
+	
 	@Override
 	public void suppress() {
 		suppressed = true;
